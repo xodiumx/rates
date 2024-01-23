@@ -1,0 +1,97 @@
+version: '3.8'
+
+services:
+
+  db:
+    build: 
+      dockerfile: ./docker/postgres/Dockerfile
+      context: .
+    container_name: db
+    restart: unless-stopped
+    volumes:
+      - database:/var/lib/postgresql/data
+    env_file:
+      - ./.env
+    ports:
+      - '5432:5432'
+
+  redis:
+    container_name: redis
+    image: redis:alpine
+    command: redis-server
+    ports:
+      - '6379:6379'
+    volumes:
+      - redis_volume:/data
+  
+  pgadmin:
+    container_name: pgadmin4_container
+    image: dpage/pgadmin4
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASSWORD}
+    depends_on:
+      - db
+    ports:
+      - '5050:80'
+    env_file:
+      - ./.env
+    
+  back:
+    build: 
+      dockerfile: ./docker/rates/Dockerfile
+      context: .
+    restart: always
+    image: oxdium/rates:latest
+    command: ['/app/docker/rates/entrypoint_app.sh']
+    container_name: back
+    depends_on:
+      - db
+      - redis
+    env_file:
+      - ./.env
+  
+  celery-worker:
+    container_name: celery-worker
+    image: oxdium/rates:latest
+    volumes:
+      - celery_volume:/usr/src/app/
+    depends_on:
+      - redis
+      - back
+    command: celery -A rates worker --loglevel=info
+    env_file:
+      - ./.env
+
+  celery-beat:
+    container_name: celery-beat
+    image: oxdium/rates:latest
+    volumes:
+      - celery_volume:/usr/src/app/
+    depends_on:
+      - redis
+      - back
+    command: celery -A rates beat -l info
+    env_file:
+      - ./.env
+
+  celery-flower:
+    container_name: celery-flower
+    image: oxdium/rates:latest
+    volumes:
+      - celery_volume:/usr/src/app/
+    depends_on:
+      - redis
+      - back
+    ports:
+      - 5555:5555
+    command: celery -A rates flower worker --url_prefix=flower --basic_auth=${FLOWER_USER}:${FLOWER_PASSWORD}
+    env_file:
+      - ./.env
+
+volumes:
+  celery_volume:
+  database:
+  redis_volume:
+  pgadmin:

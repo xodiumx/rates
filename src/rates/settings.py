@@ -129,3 +129,7 @@ REST_FRAMEWORK = {
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
     'PAGE_SIZE': 10
 }
+
+# API
+
+API_KEY = os.getenv('API_KEY', 'SzR3TJROpiCTDb5K9dKSwehNGsdus5Uy')

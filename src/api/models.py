@@ -17,7 +17,7 @@ class Rates(models.Model):
         db_index=True
     )
     price = models.DecimalField(
-        decimal_places=2,
+        decimal_places=6,
         max_digits=10,
         null=False,
         blank=False
