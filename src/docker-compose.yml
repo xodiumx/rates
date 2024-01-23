@@ -46,11 +46,24 @@ services:
     image: oxdium/rates:latest
     command: ['/app/docker/rates/entrypoint_app.sh']
     container_name: back
+    volumes:
+      - static_volume:/app/static/
     depends_on:
       - db
       - redis
     env_file:
       - ./.env
+  
+  nginx:
+    container_name: nginx
+    image: nginx:1.21.3-alpine
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - static_volume:/var/html/static/
+    depends_on:
+      - back
   
   celery-worker:
     container_name: celery-worker
@@ -95,3 +108,4 @@ volumes:
   database:
   redis_volume:
   pgadmin:
+  static_volume:
