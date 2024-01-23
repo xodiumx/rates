@@ -19,7 +19,7 @@ CSRF_TRUSTED_ORIGINS = [os.getenv('CSRF_TRUSTED_ORIGINS', 'http://localhost')]
 # Application definition
 
 INSTALLED_APPS = [
-    'current',
+    'api',
     'rest_framework',
     'django.contrib.admin',
     'django.contrib.auth',
@@ -114,3 +114,18 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Celry configuration
+
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL')
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
+CELERY_TASK_TRACK_STARTED = bool(os.getenv('CELERY_TASK_TRACK_STARTED', True))
+CELERY_TASK_TIME_LIMIT = int(os.getenv('CELERY_TASK_TIME_LIMIT', 1))
+
+
+# DRF
+
+REST_FRAMEWORK = {
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.LimitOffsetPagination',
+    'PAGE_SIZE': 10
+}
